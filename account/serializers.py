@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User, Group
-from .models import Customer,Employee, City, State, Country
+from .models import Customer,Employee, City, State, Country, UserActivity
 
 
 class LoginSerializer(serializers.Serializer):
@@ -104,3 +104,18 @@ class City_Manage_Serializer(serializers.ModelSerializer):
         model = City
         fields = ['name',]
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['id', 'username', 'email', 'last_login']
+
+class UserLogGetSerializer(serializers.ModelSerializer):
+    user = UserSerializer()
+    class Meta:
+        model = UserActivity
+        fields = '__all__'
+
+class UserLogCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserActivity
+        fields = '__all__'

@@ -5,16 +5,18 @@ from django.contrib.auth import authenticate, update_session_auth_hash
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework import status  
-from .models import Customer,Employee, City, Country, State
-from .serializers import UserSerializer, Create_Customer_Serializer,Customer_Serializer,Create_Employee_Serializer,Employee_Serializer, Group_Serializer, City_Serializer, State_Serializer, Country_Serializer, Employee_List_Serializer, ChangePasswordSerializer, City_Manage_Serializer
+from .models import Customer,Employee, City, Country, State, UserActivity
+from .serializers import (
+                UserSerializer, Create_Customer_Serializer,Customer_Serializer,
+                Create_Employee_Serializer,Employee_Serializer, Group_Serializer, 
+                City_Serializer, State_Serializer, Country_Serializer, Employee_List_Serializer, 
+                ChangePasswordSerializer, City_Manage_Serializer, UserLogGetSerializer, UserLogCreateSerializer )
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.hashers import make_password, check_password
 
 
 
 class ChangePasswordView(APIView):
-
-
     def post(self, request, *args, **kwargs):
         user = request.user
         serializer = ChangePasswordSerializer(data=request.data)
@@ -271,3 +273,17 @@ class Manage_City(APIView):
         return Response(data)
     
 
+class Userlogs(APIView):
+    http_method_names = ['get', 'post']
+    
+    def get(self, request, *args, **kwargs):
+        user_logs = UserActivity.objects.all()
+        serializer = UserLogGetSerializer(user_logs, many=True)
+        return Response(serializer.data)
+        
+    def post(self, request, *args, **kwargs):
+        serializer = UserLogCreateSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save(user=request.user)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
