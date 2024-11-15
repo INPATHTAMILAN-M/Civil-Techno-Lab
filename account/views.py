@@ -58,7 +58,7 @@ class Login_View(APIView):
             if user is not None:
                 token, created = Token.objects.get_or_create(user=user)
                 log_user_activity(user=user, action="LOGIN",
-                                  ip=request.META.get('REMOTE_ADDR'),details=request.META)
+                                  ip=request.META.get('HTTP_X_FORWARDED_FOR'),details=request.META)
                 if User.objects.filter(groups__name="Admin",id=user.id):
                     is_admin = True                    
                 else:

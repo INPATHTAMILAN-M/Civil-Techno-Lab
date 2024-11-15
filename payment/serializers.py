@@ -131,8 +131,14 @@ class Invoice_Test_Serializer(serializers.ModelSerializer):
         if obj.signature:
            
             data  = obj.report_template
-            data = data.replace('<img alt="Logo" src="https://files.covaiciviltechlab.com/static/header-hammer.png"/>','')  
-            data = data.replace('<img alt="Logo" src="https://files.covaiciviltechlab.com/static/header-hammer.png">','')  
+            soup = BeautifulSoup(data, 'html.parser')
+            # Find and remove the image tag with the specific src
+            img_tag = soup.find('img', {'src': 'https://files.covaiciviltechlab.com/static/header-hammer.png'})
+            if img_tag:
+                img_tag.extract()
+
+            # Convert back to string after modification
+            data = str(soup)
             data = data.replace('<img src="https://files.covaiciviltechlab.com/static/header.gif" alt="Logo">','')  
             data = data.replace('<img alt="Logo" src="https://files.covaiciviltechlab.com/static/header.gif"/>','')                        
             data = data.replace('<tr>','',1)
@@ -174,15 +180,21 @@ class Invoice_Test_Serializer(serializers.ModelSerializer):
         elif obj.is_authorised_signatory:
 
             data  = obj.report_template
-            # data = data.replace('<img src="https://files.covaiciviltechlab.com/static/header-hammer.png" alt="Logo">','')  
-            data = data.replace('<img src="https://files.covaiciviltechlab.com/static/header-hammer.png" alt="Logo">','') 
+            soup = BeautifulSoup(data, 'html.parser')
+            # Find and remove the image tag with the specific src
+            img_tag = soup.find('img', {'src': 'https://files.covaiciviltechlab.com/static/header-hammer.png'})
+            if img_tag:
+                img_tag.extract()
+
+            # Convert back to string after modification
+            data = str(soup)
             data = data.replace('<img src="https://files.covaiciviltechlab.com/static/header.gif" alt="Logo">','')  
             data = data.replace('<img alt="Logo" src="https://files.covaiciviltechlab.com/static/header.gif"/>','')                        
             data = data.replace('<tr>','',1)
             data = data.replace('<td colspan="2">','',1)
             data = data.replace('</td>','',1)
             data = data.replace('</tr>','',1)
-            data = data + '<figure class="table"><table cellpadding="0" cellspacing="1" border="0" style="border:none !important; border-spacing:0.6pt; width:100%"><tr><td width="40%" style="border:0 !important;"><p id="dynamic-signature"></p><p style="font-size:12px"><strong style="font-size:12px">Authorised Signatory</strong></p><p style="font-size:12px"><strong>Covai Civil Lab Private Limited</strong></p></td><td width="40%" style="border:none !important;"><p></p><p style="text-align:justify"></p></td><td width="40%" style="border:0 !important;"><p id="dynamic-signature"></p><p style="font-size:12px"><strong style="font-size:12px">Authorised Signatory</strong></p><p style="font-size:12px"><strong>Covai Civil Lab Private Limited</strong></p></td><td width="20%" style="border:0 !important;" class="qr-code"><img src="https://files.covaiciviltechlab.com/'+str(obj.invoice_image)+'"></td></tr></table></figure>'
+            data = data + '<figure class="table"><table cellpadding="0" cellspacing="1" border="0" style="border:none !important; border-spacing:0.6pt; width:100%"><tr><td width="40%" style="border:0 !important;"><p id="dynamic-signature"></p><p style="font-size:12px"><strong style="font-size:12px"><br><br>Authorised Signatory</strong></p><p style="font-size:12px"><strong>Covai Civil Lab Private Limited</strong></p></td><td width="40%" style="border:none !important;"><p></p><p style="text-align:justify"></p></td><td width="20%" style="border:0 !important;" class="qr-code"><img src="https://files.covaiciviltechlab.com/'+str(obj.invoice_image)+'"></td></tr><tr><td colspan="3" style="border:0 !important;"><hr style="color: #000;"></td></tr><tr style="border-spacing:0.6pt; border:0 !important;"><td colspan="3" style="border:0px !important; border-style:inset; border-width:0.75pt; vertical-align:middle"></td></tr></table></figure>'
             soup = BeautifulSoup(data, 'html.parser')
             first_table = str(soup.select_one("table:nth-of-type(1)"))    
      
