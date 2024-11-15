@@ -13,7 +13,7 @@ from .serializers import (
                 ChangePasswordSerializer, City_Manage_Serializer, UserLogGetSerializer, UserLogCreateSerializer )
 from django.contrib.auth.models import User, Group
 from django.contrib.auth.hashers import make_password, check_password
-
+from utils.log_user_action import log_user_activity
 
 
 class ChangePasswordView(APIView):
@@ -57,6 +57,8 @@ class Login_View(APIView):
             user = authenticate(username=username, password=password)
             if user is not None:
                 token, created = Token.objects.get_or_create(user=user)
+                log_user_activity(user=user, action="LOGIN",
+                                  ip=request.META.get('REMOTE_ADDR'),details=request.META)
                 if User.objects.filter(groups__name="Admin",id=user.id):
                     is_admin = True                    
                 else:
@@ -281,9 +283,9 @@ class Userlogs(APIView):
         serializer = UserLogGetSerializer(user_logs, many=True)
         return Response(serializer.data)
         
-    def post(self, request, *args, **kwargs):
-        serializer = UserLogCreateSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(user=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    # def post(self, request, *args, **kwargs):
+    #     serializer = UserLogCreateSerializer(data=request.data)
+    #     if serializer.is_valid():
+    #         serializer.save(user=request.user)
+    #         return Response(serializer.data, status=status.HTTP_201_CREATED)
+    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
