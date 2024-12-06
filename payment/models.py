@@ -48,6 +48,7 @@ class Invoice(models.Model):
     modified_date = models.DateTimeField(auto_now=True,null=True)
     place_of_testing = models.CharField(max_length=255, null=True, blank=True)
     completed = models.CharField(max_length=6, choices= invoice_test_choices,default="No")
+    is_old_invoice_format = models.BooleanField(default=False)
 
 
     '''material = models.ForeignKey(Material, on_delete=models.CASCADE)

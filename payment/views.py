@@ -1162,7 +1162,12 @@ class Test_List(APIView):
         
         }
         return Response(context)
-        
+    
+
+
+def modify(requst):
+    invoices = Invoice.objects.exclude(invoice_no__contains='/').update(is_old_invoice_format=True)
+    
 
 
 

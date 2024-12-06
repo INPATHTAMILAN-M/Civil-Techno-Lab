@@ -115,16 +115,21 @@ class Invoice_Test_Serializer(serializers.ModelSerializer):
     count = serializers.SerializerMethodField()
 
     without_header_footer = serializers.SerializerMethodField()
+    is_old_invoice_format = serializers.SerializerMethodField()
 
     class Meta:
         model = Invoice_Test
-        fields = ['id','invoice','test','test_name','quantity','price_per_sample','total','report_template','final_html','count','completed','signature','invoice_image','without_header_footer','is_authorised_signatory']   
+        fields = ['id','invoice','test','test_name','quantity','price_per_sample','total','report_template','final_html','count','completed','signature','invoice_image','without_header_footer','is_authorised_signatory','is_old_invoice_format']   
 
     def get_test_name(self,obj):
         return obj.test.test_name
     
     def get_count(self,obj):
         return str(obj.count)
+    
+
+    def get_is_old_invoice_format(self,obj):
+        return obj.invoice.is_old_invoice_format
     
     def get_without_header_footer(self,obj):
 
@@ -238,7 +243,14 @@ class Invoice_Test_Serializer(serializers.ModelSerializer):
         if obj.signature:
             data = obj.report_template
             data = data.replace('Page Break','<div class="pagebreak"> </div>')
-            data = data + '<figure class="table"><table cellpadding="0" cellspacing="1" border="0" style="border:none !important; border-spacing:0.6pt; width:100%"><tr><td width="40%" style="border:none !important;"><p><img src="https://files.covaiciviltechlab.com/static/ragu r.png"  height="150px" width="150px"></p><p style="font-size:12px"><strong  style="font-size:12px">M.RAGURAM, ME (STRUCTURAL)., AMIE <br>CHARTERED ENGINEER (AM 1818123)<br>Covai Civil Lab Private Limited </strong></p></td><td width="40%"  style="border:0 !important;"><p id="dynamic-signature"><img src="https://files.covaiciviltechlab.com/media/'+str(obj.signature.signature)+'" height="150px" width="150px"></p><p style="font-size:12px"><strong style="font-size:12px">'+str(obj.signature)+'<br>'+str(obj.signature.role)+'</strong></p><p style="font-size:12px"><strong>Covai Civil Lab Private Limited</strong></p> </td> <td width="20%"  style="border:0 !important;" class="qr-code"> <img src="https://files.covaiciviltechlab.com/'+str(obj.invoice_image)+'" ></td> </tr> <tr><td colspan="3" style="border:0 !important;"> <hr style="color: #000;"></td></tr> <tr style="border-spacing:0.6pt; border:0 !important;"> <td colspan="3" style="border:0px !important; border-style:inset; border-width:0.75pt; vertical-align:middle"> <p><img alt="Logo" src="https://files.covaiciviltechlab.com/static/test-footer.png" style="width:100%" /></p> </td> </tr> </table></figure>'
+            if obj.invoice.is_old_invoice_format:
+                data = data + '<figure class="table"><table cellpadding="0" cellspacing="1" border="0" style="border:none !important; border-spacing:0.6pt; width:100%"><tr><td width="40%" style="border:none !important;"><p><img src="https://files.covaiciviltechlab.com/static/ragu r.png"  height="150px" width="150px"></p><p style="font-size:12px"><strong  style="font-size:12px">M.RAGURAM, ME (STRUCTURAL)., AMIE <br>CHARTERED ENGINEER (AM 1818123)<br>COVAI CIVIL TECH LAB </strong></p></td><td width="40%"  style="border:0 !important;"><p id="dynamic-signature"><img src="https://files.covaiciviltechlab.com/media/'+str(obj.signature.signature)+'" height="150px" width="150px"></p><p style="font-size:12px"><strong style="font-size:12px">'+str(obj.signature)+'<br>'+str(obj.signature.role)+'</strong></p><p style="font-size:12px"><strong>COVAI CIVIL TECH LAB</strong></p> </td> <td width="20%"  style="border:0 !important;" class="qr-code"> <img src="https://files.covaiciviltechlab.com/'+str(obj.invoice_image)+'" ></td> </tr> <tr><td colspan="3" style="border:0 !important;"> <hr style="color: #000;"></td></tr> <tr style="border-spacing:0.6pt; border:0 !important;"> <td colspan="3" style="border:0px !important; border-style:inset; border-width:0.75pt; vertical-align:middle"> <p><img alt="Logo" src="https://files.covaiciviltechlab.com/static/test-footer.png" style="width:100%" /></p> </td> </tr> </table></figure>'
+                if obj.signature.employee_name == "Tirumalai Ravikumar":
+                    data = data.replace('Managing Director','Technical Director')
+                if obj.signature.employee_name == "C.D.Ravikuamr":
+                    data = data.replace('C.D.Ravikuamr','Technical Director')
+            else:
+                data = data + '<figure class="table"><table cellpadding="0" cellspacing="1" border="0" style="border:none !important; border-spacing:0.6pt; width:100%"><tr><td width="40%" style="border:none !important;"><p><img src="https://files.covaiciviltechlab.com/static/ragu r.png"  height="150px" width="150px"></p><p style="font-size:12px"><strong  style="font-size:12px">M.RAGURAM, ME (STRUCTURAL)., AMIE <br>CHARTERED ENGINEER (AM 1818123)<br>Covai Civil Lab Private Limited </strong></p></td><td width="40%"  style="border:0 !important;"><p id="dynamic-signature"><img src="https://files.covaiciviltechlab.com/media/'+str(obj.signature.signature)+'" height="150px" width="150px"></p><p style="font-size:12px"><strong style="font-size:12px">'+str(obj.signature)+'<br>'+str(obj.signature.role)+'</strong></p><p style="font-size:12px"><strong>Covai Civil Lab Private Limited</strong></p> </td> <td width="20%"  style="border:0 !important;" class="qr-code"> <img src="https://files.covaiciviltechlab.com/'+str(obj.invoice_image)+'" ></td> </tr> <tr><td colspan="3" style="border:0 !important;"> <hr style="color: #000;"></td></tr> <tr style="border-spacing:0.6pt; border:0 !important;"> <td colspan="3" style="border:0px !important; border-style:inset; border-width:0.75pt; vertical-align:middle"> <p><img alt="Logo" src="https://files.covaiciviltechlab.com/static/test-footer.png" style="width:100%" /></p> </td> </tr> </table></figure>'
             return data
         elif obj.is_authorised_signatory:
             data = obj.report_template
@@ -461,7 +473,7 @@ class Invoice_Serializer_For_Print(serializers.ModelSerializer):
 
     class Meta:
         model = Invoice
-        fields = ['id','qr','date','invoice_no','project_name','invoice_image','customer_name','customer_gst_no','amount','tds_amount','cgst_tax','sgst_tax','total_amount','cash','cheque_neft','tax_deduction','advance','balance','discount','amount_paid_date','bank','cheque_number','payment_mode','inr','tax','place_of_testing']
+        fields = ['id','qr','date','invoice_no','project_name','invoice_image','customer_name','customer_gst_no','amount','tds_amount','cgst_tax','sgst_tax','total_amount','cash','cheque_neft','tax_deduction','advance','balance','discount','amount_paid_date','bank','cheque_number','payment_mode','inr','tax','place_of_testing','is_old_invoice_format']
 
     def get_inr(self,obj):
         return str(num2words(obj.total_amount-obj.tds_amount)).capitalize()

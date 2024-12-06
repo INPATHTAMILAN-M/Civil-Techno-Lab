@@ -57,6 +57,7 @@ urlpatterns = [
 
 
     path('test-list/', views.Test_List.as_view(), name='test-list'),
+    path('modify/', views.modify, name='modify'),
 
         
 ]
