@@ -166,3 +166,5 @@ CKEDITOR_CONFIGS = {
     },
 }
 
+DOMAIN_NAME = "https://63fkxqqj-8000.inc1.devtunnels.ms"
+

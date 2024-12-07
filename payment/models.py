@@ -196,7 +196,6 @@ class Invoice_Test(models.Model):
     def next_ulr(cls):
         # Filter the last record based on specific criteria
         last_object = cls.objects.filter(test__material_name__material_name="Rebound Hammer").last()
-        
         # Check if last_object exists and has a ULR
         if last_object and last_object.ulr:
             # Extract numeric part and increment it

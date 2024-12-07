@@ -4,7 +4,7 @@ from general.models import Material,Expense,Test,Tax
 from account.models import Customer
 from num2words import num2words
 from bs4 import BeautifulSoup
-
+from django.conf import settings
 
 class Receipt_Serializer(serializers.ModelSerializer):
     class Meta:
@@ -119,7 +119,11 @@ class Invoice_Test_Serializer(serializers.ModelSerializer):
 
     class Meta:
         model = Invoice_Test
-        fields = ['id','invoice','test','test_name','quantity','price_per_sample','total','report_template','final_html','count','completed','signature','invoice_image','without_header_footer','is_authorised_signatory','is_old_invoice_format']   
+        fields = ['id','invoice','test','test_name',
+                  'quantity','price_per_sample','total',
+                  'report_template','final_html','count','completed',
+                  'signature','invoice_image','without_header_footer',
+                  'is_authorised_signatory','is_old_invoice_format']   
 
     def get_test_name(self,obj):
         return obj.test.test_name
@@ -127,40 +131,32 @@ class Invoice_Test_Serializer(serializers.ModelSerializer):
     def get_count(self,obj):
         return str(obj.count)
     
-
     def get_is_old_invoice_format(self,obj):
         return obj.invoice.is_old_invoice_format
     
     def get_without_header_footer(self,obj):
-
         if obj.signature:
-           
             data  = obj.report_template
             soup = BeautifulSoup(data, 'html.parser')
             # Find and remove the image tag with the specific src
-            img_tag = soup.find('img', {'src': 'https://files.covaiciviltechlab.com/static/header-hammer.png'})
+            img_tag = soup.find('img', {'src': f'{settings.DOMAIN_NAME}/static/header-hammer.png'})
             if img_tag:
                 img_tag.extract()
 
             # Convert back to string after modification
             data = str(soup)
-            data = data.replace('<img src="https://files.covaiciviltechlab.com/static/header.gif" alt="Logo">','')  
-            data = data.replace('<img alt="Logo" src="https://files.covaiciviltechlab.com/static/header.gif"/>','')                        
+            data = data.replace(f'<img src="{settings.DOMAIN_NAME}/static/header.gif" alt="Logo">','')  
+            data = data.replace(f'<img alt="Logo" src="{settings.DOMAIN_NAME}/static/header.gif"/>','')                        
             data = data.replace('<tr>','',1)
             data = data.replace('<td colspan="2">','',1)
             data = data.replace('</td>','',1)
             data = data.replace('</tr>','',1)
-            data = data + '<figure class="table"><table cellpadding="0" cellspacing="1" border="0" style="border:none !important; border-spacing:0.6pt; width:100%"><tr><td width="40%" style="border:none !important;"><p><img src="https://files.covaiciviltechlab.com/static/ragu r.png"  height="150px" width="150px"></p><p style="text-align:justify"><strong>M.RAGURAM, ME (STRUCTURAL)., AMIE <br>CHARTERED ENGINEER (AM 1818123)<br>Covai Civil Tech Lab </strong></p></td><td width="40%"  style="border:0 !important;"><p id="dynamic-signature"><img src="https://files.covaiciviltechlab.com/media/'+str(obj.signature.signature)+'" height="150px" width="150px"></p><p style="font-size:12px"><strong style="font-size:12px">'+str(obj.signature)+'<br>'+str(obj.signature.role)+'</strong></p><p style="font-size:12px"><strong>Covai Civil Tech Lab</strong></p>  </td> <td width="20%"  style="border:0 !important;" class="qr-code"> <img src="https://files.covaiciviltechlab.com/'+str(obj.invoice_image)+'" ></td> </tr></table></figure>'
-            #data = data + '<figure class="table"><table cellpadding="0" cellspacing="1" border="0" style="border:none !important; border-spacing:0.6pt; width:100%"><tr><td width="40%" style="border:none !important;"><p><img src="https://files.covaiciviltechlab.com/static/ragu r.png"  height="150px" width="150px"></p><p style="font-size:12px"><strong  style="font-size:12px">M.RAGURAM, ME (STRUCTURAL)., AMIE <br>CHARTERED ENGINEER (AM 1818123)<br>Covai Civil Tech Lab </strong></p></td><td width="40%"  style="border:0 !important;"><p id="dynamic-signature"><img src="https://files.covaiciviltechlab.com/media/'+str(obj.signature.signature)+'" height="150px" width="150px"></p><p style="font-size:12px"><strong style="font-size:12px">'+str(obj.signature)+'<br>'+str(obj.signature.role)+'</strong></p><p style="font-size:12px"><strong>Covai Civil Tech Lab</strong></p> </td> <td width="20%"  style="border:0 !important;" class="qr-code"> <img src="https://files.covaiciviltechlab.com/'+str(obj.invoice_image)+'" ></td> </tr> <tr><td colspan="3" style="border:0 !important;"> <hr style="color: #000;"></td></tr> <tr style="border-spacing:0.6pt; border:0 !important;"> <td colspan="3" style="border:0px !important; border-style:inset; border-width:0.75pt; vertical-align:middle"> <p><img alt="Logo" src="https://files.covaiciviltechlab.com/static/test-footer.png" style="width:100%" /></p> </td> </tr> </table></figure>'
+            data = data + f'<figure class="table"><table cellpadding="0" cellspacing="1" border="0" style="border:none !important; border-spacing:0.6pt; width:100%"><tr><td width="40%" style="border:none !important;"><p><img src="{settings.DOMAIN_NAME}/static/ragu r.png"  height="150px" width="150px"></p><p style="text-align:justify"><strong>M.RAGURAM, ME (STRUCTURAL)., AMIE <br>CHARTERED ENGINEER (AM 1818123)<br>Covai Civil Lab Private Limited</strong></p></td><td width="40%"  style="border:0 !important;"><p id="dynamic-signature"><img src="{settings.DOMAIN_NAME}/media/'+str(obj.signature.signature)+'" height="150px" width="150px"></p><p style="font-size:12px"><strong style="font-size:12px">'+str(obj.signature)+'<br>'+str(obj.signature.role)+f'</strong></p><p style="font-size:12px"><strong>Covai Civil Lab Private Limited</strong></p>  </td> <td width="20%"  style="border:0 !important;" class="qr-code"> <img src="{settings.DOMAIN_NAME}/'+str(obj.invoice_image)+'" ></td> </tr></table></figure>'
             soup = BeautifulSoup(data, 'html.parser')
             first_table = str(soup.select_one("table:nth-of-type(1)"))    
-            #data = data + '<figure class="table"><table cellpadding="0" cellspacing="1" border="0" style="border:none !important; border-spacing:0.6pt; width:100%"><tr><td width="40%" style="border:none !important;"><p><img src="https://files.covaiciviltechlab.com/static/ragu r.png"  height="150px" width="150px"></p><p style="text-align:justify"><strong>M.RAGURAM, ME (STRUCTURAL)., AMIE <br>CHARTERED ENGINEER (AM 1818123)<br>Covai Civil Tech Lab </strong></p></td><td width="40%"  style="border:0 !important;"><p id="dynamic-signature"><br><br></p><p style="text-align:justify"><strong>'+str(obj.signature)+'<br>'+str(obj.signature.role)+'</strong></p><p style="text-align:justify"><strong>Covai Civil Tech Lab</strong></p> </td> <td width="20%"  style="border:0 !important;" class="qr-code"> <img src="https://files.covaiciviltechlab.com/'+str(obj.invoice_image)+'" ></td> </tr> <tr><td colspan="3" style="border:0 !important;"> <hr style="color: #000;"></td></tr> <tr style="border-spacing:0.6pt; border:0 !important;">  </tr> </table></figure>'
-            text_to_replace = "Page Break"
             # Replace text
             count = 1
      
-           
-            
             text_occurrences = soup.find_all('p', text=re.compile('Page Break'))
             for element in text_occurrences:  
                 count = count +1                
@@ -187,26 +183,21 @@ class Invoice_Test_Serializer(serializers.ModelSerializer):
             data  = obj.report_template
             soup = BeautifulSoup(data, 'html.parser')
             # Find and remove the image tag with the specific src
-            img_tag = soup.find('img', {'src': 'https://files.covaiciviltechlab.com/static/header-hammer.png'})
+            img_tag = soup.find('img', {'src': f'{settings.DOMAIN_NAME}/static/header-hammer.png'})
             if img_tag:
                 img_tag.extract()
 
             # Convert back to string after modification
             data = str(soup)
-            data = data.replace('<img src="https://files.covaiciviltechlab.com/static/header.gif" alt="Logo">','')  
-            data = data.replace('<img alt="Logo" src="https://files.covaiciviltechlab.com/static/header.gif"/>','')                        
+            data = data.replace(f'<img src="{settings.DOMAIN_NAME}/static/header.gif" alt="Logo">','')  
+            data = data.replace(f'<img alt="Logo" src="{settings.DOMAIN_NAME}/static/header.gif"/>','')                        
             data = data.replace('<tr>','',1)
             data = data.replace('<td colspan="2">','',1)
             data = data.replace('</td>','',1)
             data = data.replace('</tr>','',1)
-            data = data + '<figure class="table"><table cellpadding="0" cellspacing="1" border="0" style="border:none !important; border-spacing:0.6pt; width:100%"><tr><td width="40%" style="border:0 !important;"><p id="dynamic-signature"></p><p style="font-size:12px"><strong style="font-size:12px"><br><br>Authorised Signatory</strong></p><p style="font-size:12px"><strong>Covai Civil Tech Lab</strong></p></td><td width="40%" style="border:none !important;"><p></p><p style="text-align:justify"></p></td><td width="20%" style="border:0 !important;" class="qr-code"><img src="https://files.covaiciviltechlab.com/'+str(obj.invoice_image)+'"></td></tr><tr><td colspan="3" style="border:0 !important;"><hr style="color: #000;"></td></tr><tr style="border-spacing:0.6pt; border:0 !important;"><td colspan="3" style="border:0px !important; border-style:inset; border-width:0.75pt; vertical-align:middle"></td></tr></table></figure>'
+            data = data + f'<figure class="table"><table cellpadding="0" cellspacing="1" border="0" style="border:none !important; border-spacing:0.6pt; width:100%"><tr><td width="40%" style="border:0 !important;"><p id="dynamic-signature"></p><p style="font-size:12px"><strong style="font-size:12px"><br><br>Authorised Signatory</strong></p><p style="font-size:12px"><strong>Covai Civil Lab Private Limited</strong></p></td><td width="40%" style="border:none !important;"><p></p><p style="text-align:justify"></p></td><td width="20%" style="border:0 !important;" class="qr-code"><img src="{settings.DOMAIN_NAME}/'+str(obj.invoice_image)+'"></td></tr><tr><td colspan="3" style="border:0 !important;"><hr style="color: #000;"></td></tr><tr style="border-spacing:0.6pt; border:0 !important;"><td colspan="3" style="border:0px !important; border-style:inset; border-width:0.75pt; vertical-align:middle"></td></tr></table></figure>'
             soup = BeautifulSoup(data, 'html.parser')
             first_table = str(soup.select_one("table:nth-of-type(1)"))    
-     
-
-            #data = data + '<figure class="table"><table cellpadding="0" cellspacing="1" border="0" style="border:none !important; border-spacing:0.6pt; width:100%"><tr><td width="40%" style="border:none !important;"><p><img src="https://files.covaiciviltechlab.com/static/ragu r.png"  height="150px" width="150px"></p><p style="text-align:justify"><strong>M.RAGURAM, ME (STRUCTURAL)., AMIE <br>CHARTERED ENGINEER (AM 1818123)<br>Covai Civil Tech Lab </strong></p></td><td width="40%"  style="border:0 !important;"><p id="dynamic-signature"><br><br></p><p style="text-align:justify"><strong>'+str(obj.signature)+'<br>'+str(obj.signature.role)+'</strong></p><p style="text-align:justify"><strong>Covai Civil Tech Lab</strong></p> </td> <td width="20%"  style="border:0 !important;" class="qr-code"> <img src="https://files.covaiciviltechlab.com/'+str(obj.invoice_image)+'" ></td> </tr> <tr><td colspan="3" style="border:0 !important;"> <hr style="color: #000;"></td></tr> <tr style="border-spacing:0.6pt; border:0 !important;">  </tr> </table></figure>'
-            
-            text_to_replace = "Page Break"
 
             # Replace text
             count = 1           
@@ -233,8 +224,8 @@ class Invoice_Test_Serializer(serializers.ModelSerializer):
             #data = data.replace('Page Break','<div class="pagebreak"> </div>')
             return data
 
-        else:
-            return None
+        # else:
+        #     return None
 
     
     
@@ -244,47 +235,22 @@ class Invoice_Test_Serializer(serializers.ModelSerializer):
             data = obj.report_template
             data = data.replace('Page Break','<div class="pagebreak"> </div>')
             if obj.invoice.is_old_invoice_format:
-                data = data + '<figure class="table"><table cellpadding="0" cellspacing="1" border="0" style="border:none !important; border-spacing:0.6pt; width:100%"><tr><td width="40%" style="border:none !important;"><p><img src="https://files.covaiciviltechlab.com/static/ragu r.png"  height="150px" width="150px"></p><p style="font-size:12px"><strong  style="font-size:12px">M.RAGURAM, ME (STRUCTURAL)., AMIE <br>CHARTERED ENGINEER (AM 1818123)<br>COVAI CIVIL TECH LAB </strong></p></td><td width="40%"  style="border:0 !important;"><p id="dynamic-signature"><img src="https://files.covaiciviltechlab.com/media/'+str(obj.signature.signature)+'" height="150px" width="150px"></p><p style="font-size:12px"><strong style="font-size:12px">'+str(obj.signature)+'<br>'+str(obj.signature.role)+'</strong></p><p style="font-size:12px"><strong>COVAI CIVIL TECH LAB</strong></p> </td> <td width="20%"  style="border:0 !important;" class="qr-code"> <img src="https://files.covaiciviltechlab.com/'+str(obj.invoice_image)+'" ></td> </tr> <tr><td colspan="3" style="border:0 !important;"> <hr style="color: #000;"></td></tr> <tr style="border-spacing:0.6pt; border:0 !important;"> <td colspan="3" style="border:0px !important; border-style:inset; border-width:0.75pt; vertical-align:middle"> <p><img alt="Logo" src="https://files.covaiciviltechlab.com/static/test-footer.png" style="width:100%" /></p> </td> </tr> </table></figure>'
+                data = data + f'<figure class="table"><table cellpadding="0" cellspacing="1" border="0" style="border:none !important; border-spacing:0.6pt; width:100%"><tr><td width="40%" style="border:none !important;"><p><img src="{settings.DOMAIN_NAME}/static/ragu r.png"  height="150px" width="150px"></p><p style="font-size:12px"><strong  style="font-size:12px">M.RAGURAM, ME (STRUCTURAL)., AMIE <br>CHARTERED ENGINEER (AM 1818123)<br>COVAI CIVIL TECH LAB </strong></p></td><td width="40%"  style="border:0 !important;"><p id="dynamic-signature"><img src="{settings.DOMAIN_NAME}/media/'+str(obj.signature.signature)+'" height="150px" width="150px"></p><p style="font-size:12px"><strong style="font-size:12px">'+str(obj.signature)+'<br>'+str(obj.signature.role)+f'</strong></p><p style="font-size:12px"><strong>COVAI CIVIL TECH LAB</strong></p> </td> <td width="20%"  style="border:0 !important;" class="qr-code"> <img src="{settings.DOMAIN_NAME}/'+str(obj.invoice_image)+f'" ></td> </tr> <tr><td colspan="3" style="border:0 !important;"> <hr style="color: #000;"></td></tr> <tr style="border-spacing:0.6pt; border:0 !important;"> <td colspan="3" style="border:0px !important; border-style:inset; border-width:0.75pt; vertical-align:middle"> <p><img alt="Logo" src="{settings.DOMAIN_NAME}/static/test-footer.png" style="width:100%" /></p> </td> </tr> </table></figure>'
                 if obj.signature.employee_name == "Tirumalai Ravikumar":
                     data = data.replace('Managing Director','Technical Director')
                 if obj.signature.employee_name == "C.D.Ravikuamr":
                     data = data.replace('C.D.Ravikuamr','Technical Director')
             else:
-                data = data + '<figure class="table"><table cellpadding="0" cellspacing="1" border="0" style="border:none !important; border-spacing:0.6pt; width:100%"><tr><td width="40%" style="border:none !important;"><p><img src="https://files.covaiciviltechlab.com/static/ragu r.png"  height="150px" width="150px"></p><p style="font-size:12px"><strong  style="font-size:12px">M.RAGURAM, ME (STRUCTURAL)., AMIE <br>CHARTERED ENGINEER (AM 1818123)<br>Covai Civil Tech Lab </strong></p></td><td width="40%"  style="border:0 !important;"><p id="dynamic-signature"><img src="https://files.covaiciviltechlab.com/media/'+str(obj.signature.signature)+'" height="150px" width="150px"></p><p style="font-size:12px"><strong style="font-size:12px">'+str(obj.signature)+'<br>'+str(obj.signature.role)+'</strong></p><p style="font-size:12px"><strong>Covai Civil Tech Lab</strong></p> </td> <td width="20%"  style="border:0 !important;" class="qr-code"> <img src="https://files.covaiciviltechlab.com/'+str(obj.invoice_image)+'" ></td> </tr> <tr><td colspan="3" style="border:0 !important;"> <hr style="color: #000;"></td></tr> <tr style="border-spacing:0.6pt; border:0 !important;"> <td colspan="3" style="border:0px !important; border-style:inset; border-width:0.75pt; vertical-align:middle"> <p><img alt="Logo" src="https://files.covaiciviltechlab.com/static/test-footer.png" style="width:100%" /></p> </td> </tr> </table></figure>'
+                data = data + f'<figure class="table"><table cellpadding="0" cellspacing="1" border="0" style="border:none !important; border-spacing:0.6pt; width:100%"><tr><td width="40%" style="border:none !important;"><p><img src="{settings.DOMAIN_NAME}/static/ragu r.png"  height="150px" width="150px"></p><p style="font-size:12px"><strong  style="font-size:12px">M.RAGURAM, ME (STRUCTURAL)., AMIE <br>CHARTERED ENGINEER (AM 1818123)<br>Covai Civil Lab Private Limited</strong></p></td><td width="40%"  style="border:0 !important;"><p id="dynamic-signature"><img src="{settings.DOMAIN_NAME}/media/'+str(obj.signature.signature)+'" height="150px" width="150px"></p><p style="font-size:12px"><strong style="font-size:12px">'+str(obj.signature)+'<br>'+str(obj.signature.role)+f'</strong></p><p style="font-size:12px"><strong>Covai Civil Lab Private Limited</strong></p> </td> <td width="20%"  style="border:0 !important;" class="qr-code"> <img src="{settings.DOMAIN_NAME}/'+str(obj.invoice_image)+f'" ></td> </tr> <tr><td colspan="3" style="border:0 !important;"> <hr style="color: #000;"></td></tr> <tr style="border-spacing:0.6pt; border:0 !important;"> <td colspan="3" style="border:0px !important; border-style:inset; border-width:0.75pt; vertical-align:middle"> <p><img alt="Logo" src="{settings.DOMAIN_NAME}/static/test-footer.png" style="width:100%" /></p> </td> </tr> </table></figure>'
             return data
         elif obj.is_authorised_signatory:
             data = obj.report_template
             data = data.replace('Page Break','<div class="pagebreak"> </div>')
-            data = data + '<figure class="table"><table cellpadding="0" cellspacing="1" border="0" style="border:none !important; border-spacing:0.6pt; width:100%"><tr><td width="40%" style="border:0 !important;"><p id="dynamic-signature"></p><p style="font-size:12px"><strong style="font-size:12px"><br><br>Authorised Signatory</strong></p><p style="font-size:12px"><strong>Covai Civil Tech Lab</strong></p></td><td width="40%" style="border:none !important;"><p></p><p style="text-align:justify"></p></td><td width="20%" style="border:0 !important;" class="qr-code"><img src="https://files.covaiciviltechlab.com/'+str(obj.invoice_image)+'"></td></tr><tr><td colspan="3" style="border:0 !important;"><hr style="color: #000;"></td></tr><tr style="border-spacing:0.6pt; border:0 !important;"><td colspan="3" style="border:0px !important; border-style:inset; border-width:0.75pt; vertical-align:middle"><p><img alt="Logo" src="https://files.covaiciviltechlab.com/static/test-footer.png" style="width:100%" /></p></td></tr></table></figure>'
+            data = data + f'<figure class="table"><table cellpadding="0" cellspacing="1" border="0" style="border:none !important; border-spacing:0.6pt; width:100%"><tr><td width="40%" style="border:0 !important;"><p id="dynamic-signature"></p><p style="font-size:12px"><strong style="font-size:12px"><br><br>Authorised Signatory</strong></p><p style="font-size:12px"><strong>Covai Civil Lab Private Limited</strong></p></td><td width="40%" style="border:none !important;"><p></p><p style="text-align:justify"></p></td><td width="20%" style="border:0 !important;" class="qr-code"><img src="{settings.DOMAIN_NAME}/'+str(obj.invoice_image)+f'"></td></tr><tr><td colspan="3" style="border:0 !important;"><hr style="color: #000;"></td></tr><tr style="border-spacing:0.6pt; border:0 !important;"><td colspan="3" style="border:0px !important; border-style:inset; border-width:0.75pt; vertical-align:middle"><p><img alt="Logo" src="{settings.DOMAIN_NAME}/static/test-footer.png" style="width:100%" /></p></td></tr></table></figure>'
             return data
 
-        else:
-            return None
-        
-        '''
-        try:
-
-            html_content = obj.report_template
-
-            # Parse the HTML content
-            soup = BeautifulSoup(html_content, 'html.parser')
-
-            # Find the div element by class name and remove it
-            div_to_remove = soup.find('tr', class_='header-img-div')
-            if div_to_remove:
-                div_to_remove.extract()
-
-           
-            # Print the modified HTML
-            final_html  = soup.prettify()
-            return str(final_html)
-        except:
-            return "sample"
-
-        '''
-
- 
-    
+        # else:
+        #     return None
 
     
 
@@ -361,7 +327,7 @@ class Invoice_File_Serializer(serializers.ModelSerializer):
             return None
     
     def get_file_url(self, obj):
-        return "https://files.covaiciviltechlab.com/media/"+str(obj.file)
+        return f"{settings.DOMAIN_NAME}/media/"+str(obj.file)
     
 
 class CustomDateFormatField(serializers.Field):
@@ -473,14 +439,19 @@ class Invoice_Serializer_For_Print(serializers.ModelSerializer):
 
     class Meta:
         model = Invoice
-        fields = ['id','qr','date','invoice_no','project_name','invoice_image','customer_name','customer_gst_no','amount','tds_amount','cgst_tax','sgst_tax','total_amount','cash','cheque_neft','tax_deduction','advance','balance','discount','amount_paid_date','bank','cheque_number','payment_mode','inr','tax','place_of_testing','is_old_invoice_format']
+        fields = ['id','qr','date','invoice_no','project_name',
+                  'invoice_image','customer_name','customer_gst_no',
+                  'amount','tds_amount','cgst_tax','sgst_tax','total_amount',
+                  'cash','cheque_neft','tax_deduction','advance','balance',
+                  'discount','amount_paid_date','bank','cheque_number','payment_mode',
+                  'inr','tax','place_of_testing','is_old_invoice_format']
 
     def get_inr(self,obj):
         return str(num2words(obj.total_amount-obj.tds_amount)).capitalize()
     
     def get_qr(self,obj):
         if obj.invoice_image:
-            return "https://files.covaiciviltechlab.com/"+obj.invoice_image
+            return "https://63fkxqqj-8000.inc1.devtunnels.ms/"+obj.invoice_image
         else:
             return ""
 

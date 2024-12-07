@@ -166,3 +166,4 @@ CKEDITOR_CONFIGS = {
     },
 }
 
+DOMAIN_NAME = "https://files.covaiciviltechlab.com"

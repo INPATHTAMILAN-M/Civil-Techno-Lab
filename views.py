@@ -15,7 +15,7 @@ from account.serializers import Employee_Serializer
 from account.models import Employee
 from datetime import datetime
 from general.serializers import Create_Material_Serializer,Test_Serializer1
-
+from django.conf import settings
 
 class Create_Expense_Entry(APIView):
     
@@ -351,7 +351,7 @@ class Create_Invoice_Test(APIView):
                
                 data = i_test.test.material_name.template
 
-                data = data.replace('<td colspan="2">&nbsp;</td>', '<td colspan="2"><img alt="Logo" src="https://files.covaiciviltechlab.com/static/header.gif" style="width:100%" /> </td>',1)
+                data = data.replace(f'<td colspan="2">&nbsp;</td>', f'<td colspan="2"><img alt="Logo" src="{settings.DOMAIN_NAME}/static/header.gif" style="width:100%" /> </td>',1)
 
                 order_no = 'Test Order: '+str(i_test.invoice.invoice_no)
                 data = data.replace('Test Order', order_no)
@@ -455,7 +455,7 @@ class Create_Invoice_Test(APIView):
         
                 i_test.invoice_image = invoice_img_path
                  
-                data = data.replace('qr code', '<img height="120", width="120" src="https://files.covaiciviltechlab.com/'+invoice_img_path+'">')
+                data = data.replace('qr code', f'<img height="120", width="120" src="{settings.DOMAIN_NAME}/'+invoice_img_path+'">')
              
                 i_test.report_template = data
 
@@ -782,7 +782,7 @@ class Edit_Invoice_Test_Template(APIView):
                 # Check if the div with the specified class exists
                 if div_to_modify:
                     # Modify the content of the div
-                    img_element = soup.new_tag('img', src='https://files.covaiciviltechlab.com/media/'+str(serializer.signature.signature))
+                    img_element = soup.new_tag('img', src=f'{settings.DOMAIN_NAME}/media/'+str(serializer.signature.signature))
 
 
                     div_to_modify.replace_with(img_element)
