@@ -451,7 +451,7 @@ class Invoice_Serializer_For_Print(serializers.ModelSerializer):
     
     def get_qr(self,obj):
         if obj.invoice_image:
-            return "https://63fkxqqj-8000.inc1.devtunnels.ms/"+obj.invoice_image
+            return f"{settings.DOMAIN_NAME}/"+obj.invoice_image
         else:
             return ""
 
