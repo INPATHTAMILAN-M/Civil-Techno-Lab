@@ -100,7 +100,8 @@ DATABASES = {
         'PASSWORD': 'PNR4erp!!!',
         'HOST': 'localhost',
         'PORT': '',
-        'CONN_MAX_AGE': None,
+        'CONN_MAX_AGE': 3600,
+        'CONN_HEALTH_CHECKS': True,
         'OPTIONS': {
         'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         },
